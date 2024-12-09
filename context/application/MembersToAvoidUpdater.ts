@@ -3,12 +3,13 @@ import {GameId} from "@/context/domain/GameId";
 import {MemberSecret} from "@/context/domain/MemberSecret";
 import {MemberName} from "@/context/domain/MemberName";
 import {GameFinder} from "../domain/service/GameFinder";
+import {EventBus} from "@/lib/ddd/EventBus";
 
 export class MembersToAvoidUpdater {
 
     private readonly gameFinder: GameFinder;
 
-    constructor(private readonly gameRepository: GameRepository) {
+    constructor(private readonly gameRepository: GameRepository, private readonly eventBus: EventBus) {
         this.gameFinder = new GameFinder(gameRepository);
     }
 
@@ -19,5 +20,6 @@ export class MembersToAvoidUpdater {
         const membersToAvoid = command.membersToAvoid.map(MemberName.create);
         game.updateMembersToAvoid(memberSecret, membersToAvoid);
         await this.gameRepository.update(game);
+        this.eventBus.publish(game.pullDomainEvents());
     }
 }

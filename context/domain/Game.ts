@@ -9,6 +9,7 @@ import {NewMemberEvent} from "@/context/domain/event/NewMemberEvent";
 import {GameResolvedEvent} from "@/context/domain/event/GameResolvedEvent";
 import {MemberAlreadyExistsException} from "@/context/domain/exception/MemberAlreadyExistsException";
 import {MemberNotFoundException} from "@/context/domain/exception/MemberNotFoundException";
+import {MemberUpdatedEvent} from "@/context/domain/event/MemberUpdatedEvent";
 
 export class Game extends AggregateRoot {
 
@@ -124,6 +125,7 @@ export class Game extends AggregateRoot {
             throw new Error('Member cannot avoid itself');
         }
         member.updateMembersToAvoid(membersToAvoid);
+        this.addDomainEvent(new MemberUpdatedEvent(this.id, member));
     }
 
     public getMemberBySecret(secret: MemberSecret) {

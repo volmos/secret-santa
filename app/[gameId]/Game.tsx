@@ -49,6 +49,10 @@ function InnerComponent(props: GameProps) {
                     setMembers([...members, member]);
                 }
                 return;
+            case 'member-updated':
+                const updatedMember: { name: string, membersToAvoid: string[] } = message.data;
+                setMembers(members.map(member => member.name === updatedMember.name ? updatedMember : member));
+                return;
             default:
                 return;
         }

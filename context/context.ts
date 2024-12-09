@@ -25,4 +25,4 @@ export const memberAdder = new MemberAdder(gameRepository, eventBus);
 
 export const gameResolver = new GameResolver(gameRepository, eventBus);
 
-export const membersToAvoidUpdater = new MembersToAvoidUpdater(gameRepository);
+export const membersToAvoidUpdater = new MembersToAvoidUpdater(gameRepository, eventBus);
