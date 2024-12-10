@@ -6,7 +6,7 @@ import ResolveGame from "@/app/[gameId]/ResolveGame";
 import {AblyProvider, ChannelProvider, useChannel} from "ably/react";
 import Ably from "ably";
 import ResolvedGame from "@/app/[gameId]/ResolvedGame";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import Paragraph from "@/components/Paragraph";
 import ConfigLink from "@/app/[gameId]/ConfigLink";
 
@@ -35,10 +35,17 @@ export default function Game(props: GameProps) {
 }
 
 function InnerComponent(props: GameProps) {
-    const {gameId, me} = props;
+    const {gameId} = props;
+    const [me, setMe] = useState(props.me);
     const [members, setMembers] = useState(props.members);
     const [isResolved, setIsResolved] = useState(props.isResolved);
     const [result, setResult] = useState(props.result);
+    useEffect(() => {
+        if (me && members.map(m => m.name).includes(me.name)) {
+            setMembers(members.filter(m => m.name !== me.name));
+        }
+        setMe(me);
+    }, [me, members]);
     useChannel(gameId, (message) => {
         switch (message.name) {
             case 'resolved':
@@ -48,14 +55,17 @@ function InnerComponent(props: GameProps) {
                 return;
             case 'new-member':
                 const member: { name: string, membersToAvoid: string[] } = message.data;
-                console.log(member, me);
                 if (member.name !== me?.name) {
                     setMembers([...members, member]);
                 }
                 return;
             case 'member-updated':
                 const updatedMember: { name: string, membersToAvoid: string[] } = message.data;
-                setMembers(members.map(member => member.name === updatedMember.name ? updatedMember : member));
+                if (updatedMember.name === me?.name) {
+                    setMe({...me, ...updatedMember});
+                } else {
+                    setMembers(members.map(member => member.name === updatedMember.name ? updatedMember : member));
+                }
                 return;
             default:
                 return;
