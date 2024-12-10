@@ -18,7 +18,7 @@ export default function AddMember({gameId}: { gameId: string }) {
     } = useForm<Inputs>();
     const onSubmit: SubmitHandler<Inputs> = (data: Inputs) => addMember(gameId, data.name);
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className="mb-8">
             <Paragraph className="text-center">Introduce tu nombre para unirte al amigo invisible</Paragraph>
             <div className="mb-4">
                 <Input {...register("name", {required: true})} className="block w-full"/>

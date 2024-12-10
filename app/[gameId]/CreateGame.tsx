@@ -14,15 +14,15 @@ export default function CreateGame() {
     const {
         register,
         handleSubmit,
-        formState: {errors},
+        formState: {errors, isSubmitting},
     } = useForm<Inputs>();
     const onSubmit: SubmitHandler<Inputs> = (data: Inputs) => createGame(data.owner);
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="w-full">
             <Paragraph className="text-center">Introduce tu nombre para comenzar</Paragraph>
-            <Input {...register("owner", {required: true})} className="block mb-4 w-full" />
-            {errors.owner && <span>This field is required</span>}
-            <Button type="submit" className="block mx-auto">Iniciar</Button>
+            <Input {...register("owner", {required: true})} className="block mb-4 w-full"/>
+            {errors.owner && <span>Tu nombre es necesario</span>}
+            <Button type="submit" className="block mx-auto" loading={isSubmitting}>Iniciar</Button>
         </form>
     );
 }

@@ -8,14 +8,17 @@ import Ably from "ably";
 import ResolvedGame from "@/app/[gameId]/ResolvedGame";
 import {useState} from "react";
 import Paragraph from "@/components/Paragraph";
-import Link from "next/link";
+import ConfigLink from "@/app/[gameId]/ConfigLink";
 
 interface GameProps {
     gameId: string;
-    memberName?: string;
-    isOwner: boolean;
+    me?: {
+        name: string;
+        secret: string;
+        membersToAvoid: string[];
+        isOwner: boolean;
+    },
     members: { name: string, membersToAvoid: string[] }[];
-    secret?: string;
     isResolved?: boolean;
     result?: { [secret: string]: string };
 }
@@ -32,7 +35,7 @@ export default function Game(props: GameProps) {
 }
 
 function InnerComponent(props: GameProps) {
-    const {gameId, memberName, isOwner, secret} = props;
+    const {gameId, me} = props;
     const [members, setMembers] = useState(props.members);
     const [isResolved, setIsResolved] = useState(props.isResolved);
     const [result, setResult] = useState(props.result);
@@ -45,7 +48,8 @@ function InnerComponent(props: GameProps) {
                 return;
             case 'new-member':
                 const member: { name: string, membersToAvoid: string[] } = message.data;
-                if (member.name !== memberName) {
+                console.log(member, me);
+                if (member.name !== me?.name) {
                     setMembers([...members, member]);
                 }
                 return;
@@ -59,34 +63,30 @@ function InnerComponent(props: GameProps) {
     });
     if (isResolved) {
         return (
-            <ResolvedGame secret={secret} result={result} members={members}/>
+            <ResolvedGame secret={me?.secret} result={result} members={members}/>
         );
     }
-    if (!secret) {
+    if (!me) {
         return (
-            <AddMember gameId={gameId}/>
+            <>
+                <AddMember gameId={gameId}/>
+                <CurrentMembers members={members}/>
+            </>
         );
     }
     return (
         <>
-            <Paragraph>¡Hola <b>{memberName}</b>! {isOwner ? <>Envía este <a href="#"
-                                                                             className="underline"
-                                                                             onClick={() => share(`${window.location.origin}${window.location.pathname}`)}>link</a> a
+            <Paragraph>
+                ¡Hola <b>{me.name}</b>! {me.isOwner ? <>Envía este <a href="#"
+                                                                      className="underline"
+                                                                      onClick={() => share(`${window.location.origin}${window.location.pathname}`)}>link</a> a
                 los participantes y cuando esten todos haz el
-                reparto</> : 'Ahora espera al reparto para ver quién te toca'}</Paragraph>
-            <Link href={`/${gameId}/config?secret=${secret}`} title="Config"
-                  className="w-fit ms-auto p-2 border border-primary rounded-3xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                     className="lucide lucide-bolt">
-                    <path
-                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                    <circle cx="12" cy="12" r="4"/>
-                </svg>
-            </Link>
-            <CurrentMembers members={members} memberName={memberName}/>
-            {isOwner && members.length > 1 &&
-                <ResolveGame gameId={gameId} secret={secret}/>}
+                reparto</> : 'Ahora espera al reparto para ver quién te toca'}
+            </Paragraph>
+            <ConfigLink gameId={gameId} secret={me.secret}/>
+            <CurrentMembers members={members} me={me}/>
+            {me.isOwner && members.length > 1 &&
+                <ResolveGame gameId={gameId} secret={me.secret}/>}
         </>
     );
 }

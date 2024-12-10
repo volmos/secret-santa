@@ -9,9 +9,11 @@ import Button from "@/components/Button";
 interface GameConfigProps {
     gameId: string;
     members: { name: string }[];
-    secret?: string;
     isResolved?: boolean;
-    membersToAvoid?: string[];
+    me?: {
+        secret: string;
+        membersToAvoid: string[];
+    }
 }
 
 function getFormValues(members: { name: string }[], membersToAvoid: string[]) {
@@ -21,17 +23,21 @@ function getFormValues(members: { name: string }[], membersToAvoid: string[]) {
     }, {} as { [member: string]: boolean });
 }
 
-export default function GameConfig({gameId, members, isResolved, secret, membersToAvoid}: GameConfigProps) {
+export default function GameConfig({gameId, members, isResolved, me}: GameConfigProps) {
     const {
         register,
         handleSubmit,
-    } = useForm<{ [member: string]: boolean }>({defaultValues: getFormValues(members, membersToAvoid ?? [])});
-    if (!secret || isResolved) {
-        redirect(`/${gameId}?secret=${secret}`);
+        formState: {isSubmitting},
+    } = useForm<{ [member: string]: boolean }>({defaultValues: getFormValues(members, me?.membersToAvoid ?? [])});
+    if (!me) {
+        redirect(`/${gameId}`);
+    }
+    if (isResolved) {
+        redirect(`/${gameId}?secret=${me.secret}`);
     }
     const onSubmit: SubmitHandler<{ [member: string]: boolean }> = (data: {
         [member: string]: boolean
-    }) => updateMembersToAvoid(gameId, secret, Object.entries(data).filter(([_memberName, include]) => !include).map(([memberName, _include]) => memberName));
+    }) => updateMembersToAvoid(gameId, me.secret, Object.entries(data).filter(([_memberName, include]) => !include).map(([memberName, _include]) => memberName));
     return (
         <div>
             <Paragraph className="mb-2">Desmarca los participantes a los que no vayas a regalar</Paragraph>
@@ -41,7 +47,7 @@ export default function GameConfig({gameId, members, isResolved, secret, members
                         <input type="checkbox"  {...register(member.name)} /> {member.name}
                     </label>
                 ))}
-                <Button type="submit" className="block mx-auto">Guardar</Button>
+                <Button type="submit" className="block mx-auto" loading={isSubmitting}>Guardar</Button>
             </form>
         </div>
     );

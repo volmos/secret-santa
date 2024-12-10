@@ -13,8 +13,8 @@ export default async function GamePage({
     const game = await getGame(gameId, secret);
     return (
         <main className="flex-grow flex flex-col">
-            <Game gameId={gameId} memberName={game.memberName} isOwner={game.isOwner}
-                  members={game.members} secret={secret} isResolved={game.isResolved} result={game.result}/>
+            <Game gameId={gameId} me={game.me} members={game.members} isResolved={game.isResolved}
+                  result={game.result}/>
         </main>
     );
 }

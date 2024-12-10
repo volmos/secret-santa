@@ -2,6 +2,22 @@ import {GameRepository} from "@/context/domain/GameRepository";
 import {GameId} from "@/context/domain/GameId";
 import {MemberSecret} from "@/context/domain/MemberSecret";
 import {GameFinder} from "../domain/service/GameFinder";
+import {Game} from "@/context/domain/Game";
+
+interface Response {
+    members: {
+        name: string;
+        membersToAvoid: string[];
+    }[];
+    isResolved: boolean;
+    result?: Record<string, string>;
+    me?: {
+        isOwner: boolean;
+        name: string;
+        membersToAvoid: string[];
+        secret: string;
+    };
+}
 
 export class GameRetriever {
 
@@ -15,14 +31,24 @@ export class GameRetriever {
         const gameId = GameId.create(query.gameId);
         const game = await this.gameFinder.getById(gameId);
         const secret = query.memberSecret ? MemberSecret.create(query.memberSecret) : undefined;
-        const memberPrimitives = secret ? game.getMemberBySecret(secret).toPrimitives() : undefined;
-        return {
-            isOwner: !!secret && game.isOwnerSecret(secret),
-            memberName: memberPrimitives?.name,
-            memberMembersToAvoid: memberPrimitives?.membersToAvoid,
+        const response: Response = {
             members: game.getMembersExceptSecret(secret),
             isResolved: game.isResolved(),
             result: game.getSecretAssigment()
+        };
+        if (secret) {
+            response.me = this.getMeInfo(game, secret);
+        }
+        return response;
+    }
+
+    private getMeInfo(game: Game, secret: MemberSecret) {
+        const memberPrimitives = game.getMemberBySecret(secret).toPrimitives();
+        return {
+            isOwner: game.isOwnerSecret(secret),
+            name: memberPrimitives.name,
+            membersToAvoid: memberPrimitives.membersToAvoid,
+            secret: memberPrimitives.secret
         };
     }
 
