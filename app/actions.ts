@@ -2,13 +2,13 @@
 
 import {generateUuid} from "@/lib/uuidUtil";
 import {gameCreator, gameResolver, gameRetriever, memberAdder, membersToAvoidUpdater} from "@/context/context";
-import {redirect} from "next/navigation";
+import {redirect, RedirectType} from "next/navigation";
 
 export async function createGame(ownerName: string) {
     const gameId = generateUuid();
     const ownerSecret = generateUuid();
     await gameCreator.createGame({gameId, ownerName, ownerSecret});
-    redirect(`/${gameId}?secret=${ownerSecret}`);
+    redirect(`/${gameId}?secret=${ownerSecret}`, RedirectType.replace);
 }
 
 export async function getGame(gameId: string, memberSecret?: string) {
@@ -18,7 +18,7 @@ export async function getGame(gameId: string, memberSecret?: string) {
 export async function addMember(gameId: string, memberName: string) {
     const memberSecret = generateUuid();
     await memberAdder.addMember({gameId, memberName, memberSecret});
-    redirect(`/${gameId}?secret=${memberSecret}`);
+    redirect(`/${gameId}?secret=${memberSecret}`, RedirectType.replace);
 }
 
 export async function resolveGame(gameId: string, memberSecret: string) {
