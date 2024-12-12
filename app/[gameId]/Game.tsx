@@ -41,11 +41,11 @@ function InnerComponent(props: GameProps) {
     const [isResolved, setIsResolved] = useState(props.isResolved);
     const [result, setResult] = useState(props.result);
     useEffect(() => {
-        if (me && members.map(m => m.name).includes(me.name)) {
-            setMembers(members.filter(m => m.name !== me.name));
+        if (props.me && members.map(m => m.name).includes(props.me.name)) {
+            setMembers(members.filter(m => m.name !== props.me?.name));
         }
-        setMe(me);
-    }, [me, members]);
+        setMe(props.me);
+    }, [props.me, members]);
     useChannel(gameId, (message) => {
         switch (message.name) {
             case 'resolved':
