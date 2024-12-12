@@ -5,7 +5,7 @@ export class MemberName {
     }
 
     public static create(value: string): MemberName {
-        if (value.length < 3 || value.length > 20) {
+        if (value.length < 3 || value.length > 100) {
             throw new Error('Invalid member name');
         }
         return new MemberName(value);
