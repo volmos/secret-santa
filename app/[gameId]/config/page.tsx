@@ -1,5 +1,6 @@
 import {getGame} from "@/app/actions";
 import GameConfig from "@/app/[gameId]/config/GameConfig";
+import {isError} from "@/lib/result";
 
 export default async function GameConfigPage({
                                                  params,
@@ -10,7 +11,11 @@ export default async function GameConfigPage({
 }) {
     const {gameId} = await params;
     const {secret} = await searchParams;
-    const game = await getGame(gameId, secret);
+    const result = await getGame(gameId, secret);
+    if (isError(result)) {
+        return null;
+    }
+    const game = result.data;
     return (
         <main className="flex-grow flex flex-col">
             <GameConfig gameId={gameId} members={game.members} me={game.me} isResolved={game.isResolved}/>

@@ -10,6 +10,10 @@ import {GameResolvedEvent} from "@/context/domain/event/GameResolvedEvent";
 import {MemberAlreadyExistsException} from "@/context/domain/exception/MemberAlreadyExistsException";
 import {MemberNotFoundException} from "@/context/domain/exception/MemberNotFoundException";
 import {MemberUpdatedEvent} from "@/context/domain/event/MemberUpdatedEvent";
+import {TooManyMembersToAvoid} from "@/context/domain/exception/TooManyMembersToAvoid";
+import {NoSolutionFoundException} from "@/context/domain/exception/NoSolutionFoundException";
+import {IllegalStateException} from "@/context/domain/exception/IllegalStateException";
+import {MemberAvoidItselfException} from "@/context/domain/exception/MemberAvoidItselfException";
 
 export class Game extends AggregateRoot {
 
@@ -31,7 +35,7 @@ export class Game extends AggregateRoot {
         const members = primitives.members.map(member => Member.fromPrimitives(member));
         const owner = members.find(member => member.hasName(new MemberName(primitives.ownerName)));
         if (!owner) {
-            throw new Error('Owner not found');
+            throw new IllegalStateException('Owner not found');
         }
         const assigment = primitives.assigment ? Assigment.fromPrimitives(primitives.assigment, members) : undefined;
         return new Game(id, owner, members, assigment);
@@ -98,7 +102,7 @@ export class Game extends AggregateRoot {
             this.assigment = assignment;
             this.addDomainEvent(new GameResolvedEvent(this.id, this.assigment));
         } else {
-            throw new Error('No solution found');
+            throw new NoSolutionFoundException();
         }
     }
 
@@ -116,13 +120,15 @@ export class Game extends AggregateRoot {
     public updateMembersToAvoid(memberSecret: MemberSecret, membersToAvoid: MemberName[]) {
         const member = this.getMemberBySecret(memberSecret);
         if (this.members.length - membersToAvoid.length < 3) {
-            throw new Error('Too many members to avoid');
+            throw new TooManyMembersToAvoid();
         }
-        if (membersToAvoid.some(memberName => !this.isMember(memberName))) {
-            throw new Error('Member not found');
+        for (const memberName of membersToAvoid) {
+            if (!this.isMember(memberName)) {
+                throw new MemberNotFoundException(this.id, memberName);
+            }
         }
         if (membersToAvoid.some(memberName => member.hasName(memberName))) {
-            throw new Error('Member cannot avoid itself');
+            throw new MemberAvoidItselfException();
         }
         member.updateMembersToAvoid(membersToAvoid);
         this.addDomainEvent(new MemberUpdatedEvent(this.id, member));

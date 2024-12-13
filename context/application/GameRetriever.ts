@@ -4,7 +4,7 @@ import {MemberSecret} from "@/context/domain/MemberSecret";
 import {GameFinder} from "../domain/service/GameFinder";
 import {Game} from "@/context/domain/Game";
 
-interface Response {
+export interface RetrieveGameResponse {
     members: {
         name: string;
         membersToAvoid: string[];
@@ -31,7 +31,7 @@ export class GameRetriever {
         const gameId = GameId.create(query.gameId);
         const game = await this.gameFinder.getById(gameId);
         const secret = query.memberSecret ? MemberSecret.create(query.memberSecret) : undefined;
-        const response: Response = {
+        const response: RetrieveGameResponse = {
             members: game.getMembersExceptSecret(secret),
             isResolved: game.isResolved(),
             result: game.getSecretAssigment()

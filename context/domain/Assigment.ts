@@ -1,4 +1,5 @@
 import {Member} from "@/context/domain/Member";
+import {IllegalStateException} from "@/context/domain/exception/IllegalStateException";
 
 export class Assigment {
 
@@ -10,7 +11,7 @@ export class Assigment {
             const member = members.find(member => member.name.toString() === memberName);
             const memberToAssign = members.find(member => member.name.toString() === memberToAssignName);
             if (!member || !memberToAssign) {
-                throw new Error('Member or member to assign not found');
+                throw new IllegalStateException('Member or member to assign not found');
             }
             acc.set(member, memberToAssign);
             return acc;
@@ -32,14 +33,14 @@ export class Assigment {
 
     public add(member: Member, memberToAssign: Member) {
         if (this.value.has(member)) {
-            throw new Error('Member already has a assignment');
+                throw new IllegalStateException('Member already has a assignment');
         }
         this.value.set(member, memberToAssign);
     }
 
     public delete(member: Member) {
         if (!this.value.has(member)) {
-            throw new Error('Member has no assignment');
+            throw new IllegalStateException('Member has no assignment');
         }
         this.value.delete(member);
     }

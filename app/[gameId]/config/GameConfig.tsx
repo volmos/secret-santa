@@ -5,6 +5,8 @@ import Paragraph from "@/components/Paragraph";
 import {SubmitHandler, useForm} from "react-hook-form";
 import {updateMembersToAvoid} from "@/app/actions";
 import Button from "@/components/Button";
+import {useState} from "react";
+import {isError} from "@/lib/result";
 
 interface GameConfigProps {
     gameId: string;
@@ -29,15 +31,20 @@ export default function GameConfig({gameId, members, isResolved, me}: GameConfig
         handleSubmit,
         formState: {isSubmitting},
     } = useForm<{ [member: string]: boolean }>({defaultValues: getFormValues(members, me?.membersToAvoid ?? [])});
+    const [error, setError] = useState<string>();
     if (!me) {
         redirect(`/${gameId}`);
     }
     if (isResolved) {
         redirect(`/${gameId}?secret=${me.secret}`);
     }
-    const onSubmit: SubmitHandler<{ [member: string]: boolean }> = (data: {
-        [member: string]: boolean
-    }) => updateMembersToAvoid(gameId, me.secret, Object.entries(data).filter(([_memberName, include]) => !include).map(([memberName, _include]) => memberName));
+    const onSubmit: SubmitHandler<{ [member: string]: boolean }> = async (data: { [member: string]: boolean }) => {
+        const membersToAvoid = Object.entries(data).filter(([_memberName, include]) => !include).map(([memberName, _include]) => memberName);
+        const result = await updateMembersToAvoid(gameId, me.secret, membersToAvoid);
+        if (isError(result)) {
+            setError(result.errorMessage);
+        }
+    };
     return (
         <div>
             <Paragraph className="mb-2">Desmarca los participantes a los que no vayas a regalar</Paragraph>
@@ -47,7 +54,8 @@ export default function GameConfig({gameId, members, isResolved, me}: GameConfig
                         <input type="checkbox"  {...register(member.name)} /> {member.name}
                     </label>
                 ))}
-                <Button type="submit" className="block mx-auto" loading={isSubmitting}>Guardar</Button>
+                {error && <span>{error}</span>}
+                <Button type="submit" className="block mx-auto mt-4" loading={isSubmitting}>Guardar</Button>
             </form>
         </div>
     );

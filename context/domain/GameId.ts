@@ -1,4 +1,5 @@
 import {isValidUuid} from "@/lib/uuidUtil";
+import {ValidationException} from "@/context/domain/exception/ValidationException";
 
 export class GameId {
 
@@ -7,7 +8,7 @@ export class GameId {
 
     public static create(value: string): GameId {
         if (!isValidUuid(value)) {
-            throw new Error('Invalid game ID');
+            throw new ValidationException('Invalid game ID');
         }
         return new GameId(value);
     }

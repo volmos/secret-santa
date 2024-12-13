@@ -1,3 +1,4 @@
+import {ValidationException} from "@/context/domain/exception/ValidationException";
 
 export class MemberName {
 
@@ -6,7 +7,7 @@ export class MemberName {
 
     public static create(value: string): MemberName {
         if (value.length < 3 || value.length > 100) {
-            throw new Error('Invalid member name');
+            throw new ValidationException('Invalid member name');
         }
         return new MemberName(value);
     }

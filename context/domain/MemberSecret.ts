@@ -1,4 +1,5 @@
 import {isValidUuid} from "@/lib/uuidUtil";
+import {ValidationException} from "@/context/domain/exception/ValidationException";
 
 export class MemberSecret {
 
@@ -7,7 +8,7 @@ export class MemberSecret {
 
     public static create(secret: string) {
         if (!isValidUuid(secret)) {
-            throw new Error('Invalid member secret');
+            throw new ValidationException('Invalid member secret');
         }
         return new MemberSecret(secret);
     }
