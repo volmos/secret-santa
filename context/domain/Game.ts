@@ -10,10 +10,12 @@ import {GameResolvedEvent} from "@/context/domain/event/GameResolvedEvent";
 import {MemberAlreadyExistsException} from "@/context/domain/exception/MemberAlreadyExistsException";
 import {MemberNotFoundException} from "@/context/domain/exception/MemberNotFoundException";
 import {MemberUpdatedEvent} from "@/context/domain/event/MemberUpdatedEvent";
-import {TooManyMembersToAvoid} from "@/context/domain/exception/TooManyMembersToAvoid";
+import {TooManyMembersToAvoidException} from "@/context/domain/exception/TooManyMembersToAvoidException";
 import {NoSolutionFoundException} from "@/context/domain/exception/NoSolutionFoundException";
 import {IllegalStateException} from "@/context/domain/exception/IllegalStateException";
 import {MemberAvoidItselfException} from "@/context/domain/exception/MemberAvoidItselfException";
+import {VeryFewMembersException} from "@/context/domain/exception/VeryFewMembersException";
+import {GameAlreadyResolvedException} from "@/context/domain/exception/GameAlreadyResolvedException";
 
 export class Game extends AggregateRoot {
 
@@ -74,6 +76,12 @@ export class Game extends AggregateRoot {
     }
 
     public resolve() {
+        if (this.isResolved()) {
+            throw new GameAlreadyResolvedException();
+        }
+        if (this.members.length < 3) {
+            throw new VeryFewMembersException();
+        }
         const assignment = Assigment.create();
         const alreadyGifted = new Set<Member>();
         const backtrack = (index: number): boolean => {
@@ -120,7 +128,7 @@ export class Game extends AggregateRoot {
     public updateMembersToAvoid(memberSecret: MemberSecret, membersToAvoid: MemberName[]) {
         const member = this.getMemberBySecret(memberSecret);
         if (this.members.length - membersToAvoid.length < 3) {
-            throw new TooManyMembersToAvoid();
+            throw new TooManyMembersToAvoidException();
         }
         for (const memberName of membersToAvoid) {
             if (!this.isMember(memberName)) {

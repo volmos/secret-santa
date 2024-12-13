@@ -8,7 +8,7 @@ import {RetrieveGameResponse} from "@/context/application/GameRetriever";
 import {MemberAlreadyExistsException} from "@/context/domain/exception/MemberAlreadyExistsException";
 import {GameNotFoundException} from "@/context/domain/exception/GameNotFoundException";
 import {MemberNotFoundException} from "@/context/domain/exception/MemberNotFoundException";
-import {TooManyMembersToAvoid} from "@/context/domain/exception/TooManyMembersToAvoid";
+import {TooManyMembersToAvoidException} from "@/context/domain/exception/TooManyMembersToAvoidException";
 
 export async function createGame(ownerName: string): Promise<Result<void>> {
     const gameId = generateUuid();
@@ -70,7 +70,7 @@ export async function updateMembersToAvoid(gameId: string, memberSecret: string,
     } catch (e) {
         if (e instanceof GameNotFoundException) {
             return errorResult('GAME_NOT_FOUND', 'No se encontró el juego');
-        } else if (e instanceof TooManyMembersToAvoid) {
+        } else if (e instanceof TooManyMembersToAvoidException) {
             return errorResult('TOO_MANY_MEMBERS_TO_AVOID', 'No se pueden evitar tantos participantes');
         } else {
             return unknownErrorResult();

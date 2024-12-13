@@ -8,4 +8,5 @@ export interface GameRepository {
     get(id: GameId): Promise<Game | null>;
 
     update(game: Game): Promise<void>;
+
 }

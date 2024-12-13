@@ -22,7 +22,7 @@ export class Assigment {
         return new Assigment(new Map<Member, Member>());
     }
 
-    public toPrimitives() {
+    public toPrimitives(): { [key: string]: string} {
         return Array.from(this.value.entries()).reduce((acc, [member, memberToAssign]) => {
             return {
                 ...acc,

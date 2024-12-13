@@ -5,7 +5,7 @@ import {EventBus} from "@/lib/ddd/EventBus";
 import {GameFinder} from "@/context/domain/service/GameFinder";
 import {NotOwnerMemberException} from "@/context/domain/exception/NotOwnerMemberException";
 
-export class GameResolver {
+    export class GameResolver {
 
     private readonly gameFinder: GameFinder;
 
