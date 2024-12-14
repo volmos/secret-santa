@@ -2,16 +2,9 @@ import {getGame} from "@/app/actions";
 import Game from "@/app/[gameId]/Game";
 import {isError} from "@/lib/result";
 
-export default async function GamePage({
-                                           params,
-                                           searchParams
-                                       }: {
-    params: Promise<{ gameId: string }>,
-    searchParams: Promise<{ secret?: string }>
-}) {
+export default async function GamePage({params}: { params: Promise<{ gameId: string }> }) {
     const {gameId} = await params;
-    const {secret} = await searchParams;
-    const result = await getGame(gameId, secret);
+    const result = await getGame(gameId);
     if (isError(result)) {
         return null;
     }

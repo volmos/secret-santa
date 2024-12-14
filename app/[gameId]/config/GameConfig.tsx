@@ -32,15 +32,12 @@ export default function GameConfig({gameId, members, isResolved, me}: GameConfig
         formState: {isSubmitting},
     } = useForm<{ [member: string]: boolean }>({defaultValues: getFormValues(members, me?.membersToAvoid ?? [])});
     const [error, setError] = useState<string>();
-    if (!me) {
+    if (!me || isResolved) {
         redirect(`/${gameId}`);
-    }
-    if (isResolved) {
-        redirect(`/${gameId}?secret=${me.secret}`);
     }
     const onSubmit: SubmitHandler<{ [member: string]: boolean }> = async (data: { [member: string]: boolean }) => {
         const membersToAvoid = Object.entries(data).filter(([_memberName, include]) => !include).map(([memberName, _include]) => memberName);
-        const result = await updateMembersToAvoid(gameId, me.secret, membersToAvoid);
+        const result = await updateMembersToAvoid(gameId, membersToAvoid);
         if (isError(result)) {
             setError(result.errorMessage);
         }

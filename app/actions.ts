@@ -2,26 +2,29 @@
 
 import {generateUuid} from "@/lib/uuidUtil";
 import {gameCreator, gameResolver, gameRetriever, memberAdder, membersToAvoidUpdater} from "@/context/context";
-import {redirect} from "next/navigation";
 import {errorResult, Result, successResult, unknownErrorResult} from "@/lib/result";
 import {RetrieveGameResponse} from "@/context/application/GameRetriever";
 import {MemberAlreadyExistsException} from "@/context/domain/exception/MemberAlreadyExistsException";
 import {GameNotFoundException} from "@/context/domain/exception/GameNotFoundException";
 import {MemberNotFoundException} from "@/context/domain/exception/MemberNotFoundException";
 import {TooManyMembersToAvoidException} from "@/context/domain/exception/TooManyMembersToAvoidException";
+import {cookies} from "next/headers";
+import {redirect} from "next/navigation";
 
 export async function createGame(ownerName: string): Promise<Result<void>> {
     const gameId = generateUuid();
     const ownerSecret = generateUuid();
     try {
         await gameCreator.createGame({gameId, ownerName, ownerSecret});
+        await setSecret(gameId, ownerSecret);
     } catch (_e) {
         return unknownErrorResult();
     }
-    redirect(`/${gameId}?secret=${ownerSecret}`);
+    redirect(`/${gameId}`);
 }
 
-export async function getGame(gameId: string, memberSecret?: string): Promise<Result<RetrieveGameResponse>> {
+export async function getGame(gameId: string): Promise<Result<RetrieveGameResponse>> {
+    const memberSecret = await getSecret();
     try {
         const game = await gameRetriever.retrieveGame({gameId, memberSecret});
         return successResult(game);
@@ -41,6 +44,7 @@ export async function addMember(gameId: string, memberName: string): Promise<Res
     const memberSecret = generateUuid();
     try {
         await memberAdder.addMember({gameId, memberName, memberSecret});
+        await setSecret(gameId, memberSecret);
     } catch (e) {
         if (e instanceof MemberAlreadyExistsException) {
             return errorResult('MEMBER_ALREADY_EXISTS', 'Ya existe un participante con ese nombre');
@@ -48,13 +52,13 @@ export async function addMember(gameId: string, memberName: string): Promise<Res
             return unknownErrorResult();
         }
     }
-    redirect(`/${gameId}?secret=${memberSecret}`);
+    return successResult();
 }
 
-export async function resolveGame(gameId: string, memberSecret: string): Promise<Result<void>> {
+export async function resolveGame(gameId: string): Promise<Result<void>> {
+    const memberSecret = await getSecret() || '';
     try {
         await gameResolver.resolveGame({gameId, memberSecret});
-        return successResult();
     } catch (e) {
         if (e instanceof GameNotFoundException) {
             return errorResult('GAME_NOT_FOUND', 'No se encontró el juego');
@@ -62,9 +66,11 @@ export async function resolveGame(gameId: string, memberSecret: string): Promise
             return unknownErrorResult();
         }
     }
+    return successResult();
 }
 
-export async function updateMembersToAvoid(gameId: string, memberSecret: string, membersToAvoid: string[]): Promise<Result<void>> {
+export async function updateMembersToAvoid(gameId: string, membersToAvoid: string[]): Promise<Result<void>> {
+    const memberSecret = await getSecret() || '';
     try {
         await membersToAvoidUpdater.updateMembersToAvoid({gameId, memberSecret, membersToAvoid});
     } catch (e) {
@@ -76,5 +82,19 @@ export async function updateMembersToAvoid(gameId: string, memberSecret: string,
             return unknownErrorResult();
         }
     }
-    redirect(`/${gameId}?secret=${memberSecret}`);
+    redirect(`/${gameId}`);
+}
+
+async function setSecret(gameId: string, ownerSecret: string) {
+    const cookieStore = await cookies();
+    cookieStore.set('secret', ownerSecret, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        path: `/${gameId}`,
+    });
+}
+
+async function getSecret(): Promise<string | undefined> {
+    const cookieStore = await cookies();
+    return cookieStore.get('secret')?.value;
 }

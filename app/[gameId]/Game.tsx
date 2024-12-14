@@ -93,10 +93,10 @@ function InnerComponent(props: GameProps) {
                 los participantes y cuando esten todos haz el
                 reparto</> : 'Ahora espera al reparto para ver quién te toca'}
             </Paragraph>
-            <ConfigLink gameId={gameId} secret={me.secret}/>
+            <ConfigLink gameId={gameId}/>
             <CurrentMembers members={members} me={me}/>
             {me.isOwner && members.length > 1 &&
-                <ResolveGame gameId={gameId} secret={me.secret}/>}
+                <ResolveGame gameId={gameId}/>}
         </>
     );
 }

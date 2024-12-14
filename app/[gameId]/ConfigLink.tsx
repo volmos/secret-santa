@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-export default function ConfigLink({gameId, secret}: { gameId: string, secret: string }) {
+export default function ConfigLink({gameId}: { gameId: string }) {
     return (
-        <Link href={`/${gameId}/config?secret=${secret}`} title="Config"
+        <Link href={`/${gameId}/config`} title="Config"
               className="w-fit ms-auto p-2 border border-primary rounded-3xl">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
