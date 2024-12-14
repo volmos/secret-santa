@@ -39,7 +39,7 @@ export class Game extends AggregateRoot {
         if (!owner) {
             throw new IllegalStateException('Owner not found');
         }
-        const assigment = primitives.assigment ? Assigment.fromPrimitives(primitives.assigment, members) : undefined;
+        const assigment = primitives.assigment ? Assigment.fromPrimitives(primitives.assigment) : undefined;
         return new Game(id, owner, members, assigment);
     }
 
@@ -58,10 +58,6 @@ export class Game extends AggregateRoot {
         }
         this.members.push(member);
         this.addDomainEvent(new NewMemberEvent(this.id, member));
-    }
-
-    public hasMemberWithSecret(memberSecret: MemberSecret) {
-        return this.members.some(member => member.hasSecret(memberSecret));
     }
 
     public isOwnerSecret(secret: MemberSecret) {
@@ -118,7 +114,7 @@ export class Game extends AggregateRoot {
         if (!this.assigment) {
             return undefined;
         }
-        return this.assigment.getSecretAssigment();
+        return this.assigment.toPrimitives();
     }
 
     public isResolved() {

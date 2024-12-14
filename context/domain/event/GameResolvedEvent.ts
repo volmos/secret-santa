@@ -10,7 +10,7 @@ export class GameResolvedEvent extends DomainEvent {
     constructor(gameId: GameId, assigment: Assigment) {
         super();
         this.gameId = gameId.toString();
-        this.assigment = assigment.getSecretAssigment();
+        this.assigment = assigment.toPrimitives();
     }
 
 }
