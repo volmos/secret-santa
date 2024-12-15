@@ -96,6 +96,7 @@ async function setSecret(gameId: string, ownerSecret: string) {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         path: `/${gameId}`,
+        maxAge: 60 * 60 * 24 * 7,
     });
 }
 
