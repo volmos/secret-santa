@@ -59,8 +59,8 @@ SECRET_KEY=your-secret-key
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/secretsanta.git
-   cd secretsanta
+   git clone https://github.com/volmos/secret-santa.git
+   cd secret-santa
    ```
 2. Install dependencies:
    ```bash
