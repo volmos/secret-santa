@@ -1,7 +1,6 @@
 import {getGame} from "@/app/actions";
 import Game from "@/app/[gameId]/Game";
 import {isError} from "@/lib/result";
-import UrlSecret from "@/app/[gameId]/UrlSecret";
 
 export default async function GamePage({params, searchParams}: {
     params: Promise<{ gameId: string }>,
@@ -18,7 +17,6 @@ export default async function GamePage({params, searchParams}: {
         <main className="flex-grow flex flex-col">
             <Game gameId={gameId} me={game.me} members={game.members} isResolved={game.isResolved}
                   result={game.result}/>
-            <UrlSecret gameId={gameId} secret={secret}/>
         </main>
     );
 }

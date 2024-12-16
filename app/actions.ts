@@ -85,11 +85,6 @@ export async function updateMembersToAvoid(gameId: string, membersToAvoid: strin
     redirect(`/${gameId}`);
 }
 
-export async function setUrlSecret(gameId: string, secret: string) {
-    await setSecret(gameId, secret);
-    redirect(`/${gameId}`);
-}
-
 async function setSecret(gameId: string, ownerSecret: string) {
     const cookieStore = await cookies();
     cookieStore.set('secret', ownerSecret, {
