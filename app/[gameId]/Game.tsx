@@ -46,6 +46,9 @@ function InnerComponent(props: GameProps) {
             setMembers(members.filter(m => m.name !== props.me?.name));
         }
         setMe(props.me);
+        if (Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
     }, [props.me, members]);
     useChannel(gameId, (message) => {
         switch (message.name) {
@@ -58,6 +61,12 @@ function InnerComponent(props: GameProps) {
                 const member: { name: string, membersToAvoid: string[] } = message.data;
                 if (member.name !== me?.name) {
                     setMembers([...members, member]);
+                    if (Notification.permission === 'granted') {
+                        new Notification('Nuevo participante 🎁', {
+                            body: `¡${member.name} se ha unido al juego!`,
+                            icon: '/icon.png'
+                        });
+                    }
                 }
                 return;
             case 'member-updated':

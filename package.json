@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "ably": "^2.5.0",
+    "ably": "^2.15.0",
     "clsx": "^2.1.1",
     "mongodb": "^6.11.0",
     "next": "16.0.10",
