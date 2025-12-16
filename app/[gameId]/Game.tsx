@@ -101,6 +101,10 @@ function InnerComponent(props: GameProps) {
                 const newResult: { [secret: string]: string } = message.data;
                 setIsResolved(true);
                 setResult(newResult);
+                sendNotification('¡Sorteo realizado! 🎲', {
+                    body: 'Entra para descubrir quién es tu amigo invisible',
+                    icon: '/icon.png'
+                });
                 return;
             case 'new-member':
                 const member: { name: string, membersToAvoid: string[] } = message.data;
