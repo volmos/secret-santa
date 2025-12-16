@@ -3,12 +3,13 @@
 import CurrentMembers from "@/app/[gameId]/CurrentMembers";
 import AddMember from "@/app/[gameId]/AddMember";
 import ResolveGame from "@/app/[gameId]/ResolveGame";
-import {AblyProvider, ChannelProvider, useChannel} from "ably/react";
+import { AblyProvider, ChannelProvider, useChannel } from "ably/react";
 import Ably from "ably";
 import ResolvedGame from "@/app/[gameId]/ResolvedGame";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import Paragraph from "@/components/Paragraph";
 import ConfigLink from "@/app/[gameId]/ConfigLink";
+import Card from "@/components/Card";
 
 interface GameProps {
     gameId: string;
@@ -24,18 +25,18 @@ interface GameProps {
 }
 
 export default function Game(props: GameProps) {
-    const client = new Ably.Realtime({authUrl: '/api/ably-auth', authMethod: 'POST'});
+    const client = new Ably.Realtime({ authUrl: '/api/ably-auth', authMethod: 'POST' });
     return (
         <AblyProvider client={client}>
             <ChannelProvider channelName={props.gameId}>
-                <InnerComponent {...props}/>
+                <InnerComponent {...props} />
             </ChannelProvider>
         </AblyProvider>
     );
 }
 
 function InnerComponent(props: GameProps) {
-    const {gameId} = props;
+    const { gameId } = props;
     const [me, setMe] = useState(props.me);
     const [members, setMembers] = useState(props.members);
     const [isResolved, setIsResolved] = useState(props.isResolved);
@@ -62,7 +63,7 @@ function InnerComponent(props: GameProps) {
             case 'member-updated':
                 const updatedMember: { name: string, membersToAvoid: string[] } = message.data;
                 if (updatedMember.name === me?.name) {
-                    setMe({...me, ...updatedMember});
+                    setMe({ ...me, ...updatedMember });
                 } else {
                     setMembers(members.map(member => member.name === updatedMember.name ? updatedMember : member));
                 }
@@ -73,30 +74,50 @@ function InnerComponent(props: GameProps) {
     });
     if (isResolved) {
         return (
-            <ResolvedGame secret={me?.secret} result={result} members={members}/>
+            <ResolvedGame secret={me?.secret} result={result} members={members} />
         );
     }
     if (!me) {
         return (
-            <>
-                <AddMember gameId={gameId}/>
-                <CurrentMembers members={members}/>
-            </>
+            <div className="flex flex-col gap-6 w-full max-w-lg mx-auto">
+                <AddMember gameId={gameId} />
+                <CurrentMembers members={members} />
+            </div>
         );
     }
     return (
         <>
-            <Paragraph>
-                ¡Hola <b>{me.name}</b>! {me.isOwner ? <>Envía este <a href="#"
-                                                                      className="underline"
-                                                                      onClick={() => share(`${window.location.origin}${window.location.pathname}`)}>link</a> a
-                los participantes y cuando esten todos haz el
-                reparto</> : 'Ahora espera al reparto para ver quién te toca'}
-            </Paragraph>
-            <ConfigLink gameId={gameId}/>
-            <CurrentMembers members={members} me={me}/>
+            <div className="flex justify-between items-start mb-6">
+                <Card className="flex-grow mr-4 p-4 md:p-6 bg-white/70">
+                    <Paragraph className="text-lg">
+                        ¡Hola <b className="text-secondary text-xl">{me.name}</b>! 👋
+                    </Paragraph>
+                    <div className="mt-2 text-primary/80 text-sm leading-relaxed">
+                        {me.isOwner ? (
+                            <>
+                                Envía este
+                                <button
+                                    onClick={() => share(`${window.location.origin}${window.location.pathname}`)}
+                                    className="mx-1 px-2 py-0.5 bg-primary/10 text-primary font-bold rounded hover:bg-primary/20 transition-colors inline-flex items-center gap-1"
+                                >
+                                    enlace 🔗
+                                </button>
+                                a los participantes.
+                                <br />
+                                <span className="text-xs opacity-70 block mt-1">Cuando esten todos, ¡haz el reparto!</span>
+                            </>
+                        ) : (
+                            'Espera a que el organizador realice el sorteo.'
+                        )}
+                    </div>
+                </Card>
+                <ConfigLink gameId={gameId} className="" />
+            </div>
+
+            <CurrentMembers members={members} me={me} />
+
             {me.isOwner && members.length > 1 &&
-                <ResolveGame gameId={gameId}/>}
+                <ResolveGame gameId={gameId} />}
         </>
     );
 }
