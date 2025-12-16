@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import Paragraph from "@/components/Paragraph";
 import ConfigLink from "@/app/[gameId]/ConfigLink";
 import Card from "@/components/Card";
+import NotificationsRequestButton from "./NotificationsRequestButton";
 
 interface GameProps {
     gameId: string;
@@ -41,15 +42,59 @@ function InnerComponent(props: GameProps) {
     const [members, setMembers] = useState(props.members);
     const [isResolved, setIsResolved] = useState(props.isResolved);
     const [result, setResult] = useState(props.result);
+    const [permission, setPermission] = useState('default');
+
+    useEffect(() => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('SW registration successful with scope: ', registration.scope);
+                })
+                .catch(err => {
+                    console.log('SW registration failed: ', err);
+                });
+        }
+        if ('Notification' in window) {
+            setPermission(Notification.permission);
+            if (Notification.permission === 'default') {
+                requestNotificationPermission();
+            }
+        }
+    }, []);
+
     useEffect(() => {
         if (props.me && members.map(m => m.name).includes(props.me.name)) {
             setMembers(members.filter(m => m.name !== props.me?.name));
         }
         setMe(props.me);
-        if (Notification.permission === 'default') {
-            Notification.requestPermission();
+        if ('Notification' in window) {
+            setPermission(Notification.permission);
         }
     }, [props.me, members]);
+
+    const requestNotificationPermission = async () => {
+        const result = await Notification.requestPermission();
+        setPermission(result);
+        if (result === 'granted') {
+            sendNotification('Notificaciones activadas', {
+                body: 'Te avisaremos cuando se unan nuevos participantes',
+                icon: '/icon.png'
+            });
+        }
+    };
+
+    const sendNotification = (title: string, options?: NotificationOptions) => {
+        if (Notification.permission === 'granted') {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.showNotification(title, options);
+                });
+            } else {
+                new Notification(title, options);
+            }
+        }
+    }
+
     useChannel(gameId, (message) => {
         switch (message.name) {
             case 'resolved':
@@ -61,12 +106,10 @@ function InnerComponent(props: GameProps) {
                 const member: { name: string, membersToAvoid: string[] } = message.data;
                 if (member.name !== me?.name) {
                     setMembers([...members, member]);
-                    if (Notification.permission === 'granted') {
-                        new Notification('Nuevo participante 🎁', {
-                            body: `¡${member.name} se ha unido al juego!`,
-                            icon: '/icon.png'
-                        });
-                    }
+                    sendNotification('Nuevo participante 🎁', {
+                        body: `¡${member.name} se ha unido al juego!`,
+                        icon: '/icon.png'
+                    });
                 }
                 return;
             case 'member-updated':
@@ -120,7 +163,12 @@ function InnerComponent(props: GameProps) {
                         )}
                     </div>
                 </Card>
-                <ConfigLink gameId={gameId} className="absolute top-2 right-2" />
+                <div className="absolute top-2 right-2 flex gap-2">
+                    {permission === 'default' && (
+                        <NotificationsRequestButton requestNotificationPermission={requestNotificationPermission} />
+                    )}
+                    <ConfigLink gameId={gameId} />
+                </div>
             </div>
 
             <CurrentMembers members={members} me={me} />
