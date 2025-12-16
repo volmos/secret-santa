@@ -1,6 +1,7 @@
 'use client';
 
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import Paragraph from "@/components/Paragraph";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { updateMembersToAvoid } from "@/app/actions";
@@ -39,6 +40,22 @@ export default function GameConfig({ gameId, members, isResolved, me }: GameConf
         redirect(`/${gameId}`);
     }
 
+    if (members.length < 4) {
+        return (
+            <Card>
+                <Paragraph className="mb-6 text-center font-bold text-xl">
+                    Pocos participantes
+                </Paragraph>
+                <Paragraph className="mb-6 text-center opacity-70">
+                    Necesitamos al menos 4 personas para poder activar la opción de ‘a este no le regalo’ 😜.
+                </Paragraph>
+                <Link href={`/${gameId}`} className="block w-fit mx-auto">
+                    <Button variant="secondary">Volver</Button>
+                </Link>
+            </Card>
+        );
+    }
+
     const onSubmit: SubmitHandler<{ [member: string]: boolean }> = async (data: { [member: string]: boolean }) => {
         const membersToAvoid = Object.entries(data).filter(([_memberName, include]) => !include).map(([memberName, _include]) => memberName);
         const result = await updateMembersToAvoid(gameId, membersToAvoid);
@@ -72,7 +89,7 @@ export default function GameConfig({ gameId, members, isResolved, me }: GameConf
                 {error && <div className="p-3 bg-secondary/10 text-secondary rounded-lg text-center font-bold text-sm">{error}</div>}
 
                 <Button type="submit" className="block mx-auto mt-8 w-full md:w-auto min-w-[200px]" loading={isSubmitting}>
-                    Guardar Cambios
+                    Guardar
                 </Button>
             </form>
         </Card>

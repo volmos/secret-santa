@@ -87,8 +87,8 @@ function InnerComponent(props: GameProps) {
     }
     return (
         <>
-            <div className="flex justify-between items-start mb-6">
-                <Card className="flex-grow mr-4 p-4 md:p-6 bg-white/70">
+            <div className="relative mb-6">
+                <Card className="p-4 md:p-6 bg-white/70 pr-12">
                     <Paragraph className="text-lg">
                         ¡Hola <b className="text-secondary text-xl">{me.name}</b>! 👋
                     </Paragraph>
@@ -111,7 +111,7 @@ function InnerComponent(props: GameProps) {
                         )}
                     </div>
                 </Card>
-                <ConfigLink gameId={gameId} className="" />
+                <ConfigLink gameId={gameId} className="absolute top-2 right-2" />
             </div>
 
             <CurrentMembers members={members} me={me} />

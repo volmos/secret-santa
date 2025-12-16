@@ -21,11 +21,7 @@ export default function MemberCard({ name, isMe, membersToAvoid = [], className 
                 {isMe ? 'Tú' : name}
             </div>
 
-            {!isMe && (
-                <div className="text-xs font-bold uppercase tracking-wider text-primary/40">
-                    Participante
-                </div>
-            )}
+
 
             {membersToAvoid.length > 0 && (
                 <div className="mt-2 text-xs bg-secondary/10 text-secondary px-3 py-1 rounded-full border border-secondary/20">
